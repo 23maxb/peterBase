@@ -1,12 +1,17 @@
+import math
+
 from moviepy import VideoFileClip
 from moviepy.video.fx.Crop import Crop
 import random
+import os
 
 
 def getParkour(lengthOfClip):
-    start = random.randint(0, 199 - lengthOfClip)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    video_path = os.path.join(base_dir, "resources", "MC Parkour.mp4")
+    start = random.randint(0, 199 - math.floor(lengthOfClip))
     clip = (
-        VideoFileClip("resources/MC Parkour.mp4")
+        VideoFileClip(video_path)
         .subclipped(start, start + lengthOfClip)
         .without_audio()
     )

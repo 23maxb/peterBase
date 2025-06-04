@@ -1,3 +1,10 @@
+from enum import Enum
+from typing import List
+
+from numpy import character
+from pydantic import BaseModel
+
+
 def getTopics():
     return """Electron Transport Chain (ETC) in Type I vs. Type II fibers
 – Overlay mitochondrial density and O₂ usage; visualize Complex I–IV.
@@ -49,8 +56,30 @@ DOMS ≠ Muscle Growth
 """.split("|")
 
 
-def getPrompt(subject, clipLengthMinutes):
-    prompt = "Make a short conversation between Peter Griffin and Stevie Griffin from Family Guy discussing an intricate nerdy fitness conversation that will be mass appealing and interesting to those with little to moderate knowledge of fitness. Make sure you dive into chemistry, biology, and appeal to topics that often have misconceptions. Make it a back and forth dialogue that lasts about " + clipLengthMinutes + " minute. Make sure it is extremely nerdy and very in depth and science based. It should discuss " + subject + (
-        ". The format should be an array of json objects with the following format:\n\n"
-        "[{\"character\": \"Peter\", \"text\": \"<text>\"}, {\"character\": \"Stewie\", \"text\": \"<text>\"}, {\"character\": \"Peter\", \"text\": \"<text>\"}]\n\n")
+def getFitnessPrompt(subject, clipLengthMinutes=None, characters=None):
+    if characters is None:
+        characters = ["Peter", "Stewie"]
+    if clipLengthMinutes is None:
+        clipLengthMinutes = 1
+
+    characterInfo = " and ".join(characters)
+    prompt = (
+            "Make a short conversation between " + characterInfo + " from Family Guy discussing an intricate nerdy fitness conversation that will be mass appealing and interesting to those with little to moderate knowledge of fitness. Make sure you dive into chemistry, biology, and appeal to topics that often have misconceptions. Make it a back and forth dialogue that lasts about " + str(
+        clipLengthMinutes) + " minute" +
+            ("s" if clipLengthMinutes != 1 else "")
+            + ". Make sure it is extremely nerdy and very in depth and science based. It should especially discuss " + subject + (
+                    ". The format should be an array of json objects with the following format:\n\n"
+                    "[{\"character\": \"" + characters[0] + "\", \"text\": \"<text>\"}, {\"character\": \"" +
+                    characters[
+                        1] + "\", \"text\": \"<text>\"}, {\"character\": \"" + characters[
+                        0] + "\", \"text\": \"<text>\"}]\n\n"))
     return prompt
+
+
+class Dialogue(BaseModel):
+    character: str
+    text: str
+
+
+class Conversation(BaseModel):
+    dialogue: List[Dialogue]
