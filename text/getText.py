@@ -2,7 +2,7 @@ import os
 import tempfile
 import whisperx
 from moviepy import TextClip, CompositeVideoClip
-
+import torch
 from resources import getFitnessPrompt, getTopics, Conversation
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -35,37 +35,45 @@ def getScript(subject, characters):
     return "hi"
 
 
+def get_device():
+    return "cuda" if torch.cuda.is_available() else "cpu"
+
+
 def getCaptionsTimeStamped(clip):
-    # Export audio from the video clip to a temporary file
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio:
         clip.audio.write_audiofile(temp_audio.name)
         temp_audio_path = temp_audio.name
 
-    # Load whisperx model
-    model = whisperx.load_model("base", device="cpu")
+    device = get_device()
+    model = whisperx.load_model("large-v2", device=device)
     audio = whisperx.load_audio(temp_audio_path)
     result = model.transcribe(audio)
 
-    # Clean up temp file
-    os.remove(temp_audio_path)
+    # Load alignment model and align
+    align_model, metadata = whisperx.load_align_model(language_code=result["language"], device=device)
+    result_aligned = whisperx.align(result["segments"], align_model, metadata, audio, device)
 
-    return result['segments']  # Each segment contains 'start', 'end', 'text'
+    os.remove(temp_audio_path)
+    return result_aligned
 
 
 def addCaptions(clip):
     subtitle_clips = []
     captions = getCaptionsTimeStamped(clip)
     for segment in captions["segments"]:
-        txt = segment["text"]
+        txt = segment["text"].strip()
         txt_clip = TextClip(
-            text=txt,
-            font_size=40,
+            txt,
+            fontsize=40,
             color='white',
-            size=(clip.w, 60)
-        ).with_duration(segment["end"] - segment["start"]).with_position(('center', 'center')).with_start(
-            segment["start"])
+            font='Arial',  # Make sure Arial is installed, or use another font
+            size=(clip.w, 60),
+            method='caption'
+        ).set_duration(segment["end"] - segment["start"]) \
+            .set_position(('center', 'bottom')) \
+            .set_start(segment["start"])
         subtitle_clips.append(txt_clip)
-    return CompositeVideoClip([clip, *subtitle_clips])  # star unpacks iterable 
+    return CompositeVideoClip([clip, *subtitle_clips])
 
 
 def main():

@@ -1,0 +1,9 @@
+whisperx~=3.3.4
+torch~=2.7.1
+moviepy~=2.2.1
+python-dotenv~=1.1.0
+openai~=1.86.0
+pydub~=0.25.1
+elevenlabs~=2.3.0
+numpy~=2.3.0
+pydantic~=2.11.5

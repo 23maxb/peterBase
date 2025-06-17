@@ -1,4 +1,3 @@
-from idna.idnadata import scripts
 from moviepy import VideoFileClip, TextClip, CompositeVideoClip
 from numpy.f2py.f2py2e import CombineIncludePaths
 from numpy.ma.core import true_divide
@@ -10,7 +9,7 @@ from text.getText import getScript, addCaptions
 from images.getImage import addImages
 
 from dotenv import load_dotenv
-
+import torch
 
 def main():
     load_dotenv()
@@ -31,6 +30,9 @@ def main():
 
 if __name__ == "__main__":
     # load_dotenv()
+    
+    # print(torch.cuda.get_device_name(0))
+    # print(torch.cuda.get_device_capability(0))
     audio = "tempfile.wav"
     TRUE_LENGTH = getLength(audio)
     toReturn = getParkour(TRUE_LENGTH)
