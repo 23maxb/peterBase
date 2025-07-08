@@ -7,3 +7,4 @@ pydub~=0.25.1
 elevenlabs~=2.3.0
 numpy~=2.3.0
 pydantic~=2.11.5
+pillow~=11.2.1
